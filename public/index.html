@@ -1,1 +1,128 @@
-<h1>AI Trader SaaS</h1>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Nexus | Autotrading Syndicate</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  
+  <div class="blob blob-1"></div>
+  <div class="blob blob-2"></div>
+  
+  <main class="app-container">
+    <!-- AUTHENTICATION VIEW -->
+    <section id="auth-view" class="view active-view glass-panel">
+      <div class="auth-card">
+        <div class="logo">
+          <h1>Nexus</h1>
+          <div class="status-dot"></div>
+        </div>
+        <p class="subtitle">Algorithmic Execution Node</p>
+        
+        <div class="tabs">
+          <button class="tab-btn active" id="tab-login">Sign In</button>
+          <button class="tab-btn" id="tab-register">Apply</button>
+        </div>
+
+        <form id="auth-form">
+          <div class="input-group">
+            <label for="username">Syndicate Alias</label>
+            <input type="text" id="username" autocomplete="off" required>
+          </div>
+          <div class="input-group">
+            <label for="password">Passphrase</label>
+            <input type="password" id="password" required>
+          </div>
+          <button type="submit" class="btn-primary" id="auth-submit">Initialize Connection</button>
+        </form>
+        <div id="auth-error" class="error-text"></div>
+      </div>
+    </section>
+
+    <!-- DASHBOARD VIEW -->
+    <section id="dashboard-view" class="view glass-panel">
+      <header class="dash-header">
+        <div class="logo">
+          <h2>Nexus</h2>
+          <div class="status-dot pulse"></div>
+          <span class="status-text">Uplink Active</span>
+        </div>
+        <nav>
+          <button id="nav-portfolio" class="nav-btn active">Portfolio</button>
+          <button id="nav-settings" class="nav-btn">API Keys</button>
+          <button id="nav-logout" class="nav-btn outline">Disconnect</button>
+        </nav>
+      </header>
+
+      <div class="dash-content">
+        <!-- Portfolio Tab -->
+        <div id="tab-portfolio" class="dash-tab active">
+          <div class="metric-grid">
+            <div class="metric-card glass-inner">
+              <h3>Net Liquidity</h3>
+              <div class="metric-value" id="val-equity">$---</div>
+              <div class="metric-trend positive">+0.0% Today</div>
+            </div>
+            <div class="metric-card glass-inner">
+              <h3>Buying Power</h3>
+              <div class="metric-value" id="val-bp">$---</div>
+            </div>
+            <div class="metric-card glass-inner">
+              <h3>Active Algorithms</h3>
+              <div class="metric-value">Master Node</div>
+              <div class="metric-trend neutral">Listening for Webhooks</div>
+            </div>
+          </div>
+          
+          <div class="positions-section glass-inner mt-4">
+            <h3>Recent Executions</h3>
+            <div class="table-container">
+              <table id="positions-table">
+                <thead>
+                  <tr>
+                    <th>Asset</th>
+                    <th>Direction</th>
+                    <th>Qty</th>
+                    <th>Status</th>
+                  </tr>
+                </thead>
+                <tbody id="positions-body">
+                  <tr><td colspan="4" class="empty-state">Waiting for Master Signal...</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- Settings Tab -->
+        <div id="tab-settings" class="dash-tab">
+          <div class="settings-card glass-inner">
+            <h3>Alpaca Paper Keys</h3>
+            <p class="help-text">Your API keys are encrypted at rest using AES-256 military-grade encryption. The master node executes signals directly to your isolated container.</p>
+            
+            <form id="keys-form">
+              <div class="input-group">
+                <label for="alpaca-key">API Key ID</label>
+                <input type="text" id="alpaca-key" placeholder="PK..." required>
+              </div>
+              <div class="input-group">
+                <label for="alpaca-secret">Secret Key</label>
+                <input type="password" id="alpaca-secret" required>
+              </div>
+              <button type="submit" class="btn-primary" id="keys-submit">Update Credentials</button>
+              <div id="keys-msg" class="success-text mt-2"></div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>
