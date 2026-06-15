@@ -30,6 +30,10 @@ app.post('/api/internal/signal', async (req, res) => {
   // Security: You might want to add an internal IP check or basic auth token here
   const { symbol, direction, price, qty, trailPrice, targetPrice, isTrending } = req.body;
   
+  if (!symbol || !direction || !price) {
+    return res.status(400).json({ error: 'Missing required fields' });
+  }
+
   console.log(`[WEBHOOK] Received signal from Master: ${direction} ${symbol} @ ${price}`);
   
   db.all(`SELECT alpaca_key, alpaca_secret FROM users WHERE is_active = 1`, [], async (err, users) => {
