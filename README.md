@@ -3,8 +3,8 @@
 AITrader-Friends is the Execution Node for the friends platform of AI Trader. It listens for webhooks from the master AI Trader and mirrors the executed trades to multiple user accounts using the Alpaca API.
 
 ## Features
-- Listens for trade signals at `/api/internal/signal`.
-- Distributes and scales trades according to the configured buying power (currently fixed at 5% per trade).
+- Listens for trade signals (entry and `CLOSE`) at `/api/internal/signal`.
+- Distributes and scales trades according to the configured buying power (currently fixed at 5% per trade), and natively closes out held quantities when a `CLOSE` signal is received from the master node.
 - Uses a local SQLite database to securely store user credentials using bcrypt for passwords and JWT for session tokens.
 
 ## Setup and Installation
