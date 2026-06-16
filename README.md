@@ -4,7 +4,7 @@ AITrader-Friends is the Execution Node for the friends platform of AI Trader. It
 
 ## Features
 - Listens for trade signals (entry and `CLOSE`) at `/api/internal/signal`.
-- Distributes and scales trades according to the configured buying power (currently fixed at 5% per trade), and natively closes out held quantities when a `CLOSE` signal is received from the master node.
+- Distributes and scales trades dynamically by applying the exact Kelly Criterion percentage (`positionPct`) calculated by the Master Node to each user's individual buying power, and natively closes out held quantities when a `CLOSE` signal is received from the master node.
 - Uses a local SQLite database to securely store user credentials using bcrypt for passwords and JWT for session tokens.
 
 ## Setup and Installation

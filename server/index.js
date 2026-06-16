@@ -56,8 +56,9 @@ app.post('/api/internal/signal', async (req, res) => {
           // Alpaca closePosition automatically sells all shares/coins
           await alpaca.closePosition(symbol);
         } else {
-          // Simple sizing: 5% of buying power (this can be replaced with full Kelly logic later)
-          const positionDollars = parseFloat(account.buying_power) * 0.05;
+          // Dynamic sizing: exact percentage used by the master node, fallback to 5%
+          const positionPct = req.body.positionPct || 0.05;
+          const positionDollars = parseFloat(account.buying_power) * positionPct;
           const calculatedQty = Math.max(1, Math.floor(positionDollars / price));
           
           await alpaca.createOrder({
