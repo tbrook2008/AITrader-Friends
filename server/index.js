@@ -131,9 +131,28 @@ app.get('/api/user/portfolio', authenticateToken, (req, res) => {
         paper: true
       });
       const account = await alpaca.getAccount();
+      
+      // Fetch recent orders to populate the executions table
+      const orders = await alpaca.getOrders({
+        status: 'all',
+        limit: 10,
+        direction: 'desc'
+      });
+      
+      const formattedOrders = orders.map(o => ({
+        id: o.id,
+        asset: o.symbol,
+        side: o.side.toUpperCase(),
+        qty: o.qty,
+        price: o.filled_avg_price || o.limit_price || 'Market',
+        status: o.status,
+        timestamp: new Date(o.created_at).toLocaleTimeString()
+      }));
+
       res.json({ 
         equity: account.equity, 
-        buying_power: account.buying_power, 
+        buying_power: account.buying_power,
+        recent_orders: formattedOrders,
         connected: true 
       });
     } catch (e) {

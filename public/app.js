@@ -164,9 +164,29 @@ document.addEventListener('DOMContentLoaded', () => {
       if (data.connected) {
         document.getElementById('val-equity').textContent = '$' + parseFloat(data.equity).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
         document.getElementById('val-bp').textContent = '$' + parseFloat(data.buying_power).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
+        
+        // Update Recent Executions Table
+        const tbody = document.getElementById('positions-body');
+        if (data.recent_orders && data.recent_orders.length > 0) {
+          tbody.innerHTML = '';
+          data.recent_orders.forEach(order => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+              <td>${order.asset}</td>
+              <td class="${order.side === 'BUY' ? 'positive' : 'error-text'}">${order.side}</td>
+              <td>${order.qty}</td>
+              <td>${order.status}</td>
+            `;
+            tbody.appendChild(tr);
+          });
+        } else {
+          tbody.innerHTML = '<tr><td colspan="4" class="empty-state">No recent algorithmic executions found.</td></tr>';
+        }
+
       } else {
         document.getElementById('val-equity').textContent = 'Needs API Keys';
         document.getElementById('val-bp').textContent = 'Needs API Keys';
+        document.getElementById('positions-body').innerHTML = '<tr><td colspan="4" class="empty-state">Waiting for Master Signal...</td></tr>';
       }
     } catch (err) {
       console.error(err);
