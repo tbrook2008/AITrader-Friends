@@ -51,19 +51,25 @@ app.post('/api/internal/signal', async (req, res) => {
       
       try {
         const account = await alpaca.getAccount();
-        // Simple sizing: 5% of buying power (this can be replaced with full Kelly logic later)
-        const positionDollars = parseFloat(account.buying_power) * 0.05;
-        const calculatedQty = Math.max(1, Math.floor(positionDollars / price));
         
-        await alpaca.createOrder({
-          symbol,
-          qty: calculatedQty,
-          side: direction === 'LONG' ? 'buy' : 'sell',
-          type: 'market',
-          time_in_force: 'gtc'
-        });
+        if (direction === 'CLOSE') {
+          // Alpaca closePosition automatically sells all shares/coins
+          await alpaca.closePosition(symbol);
+        } else {
+          // Simple sizing: 5% of buying power (this can be replaced with full Kelly logic later)
+          const positionDollars = parseFloat(account.buying_power) * 0.05;
+          const calculatedQty = Math.max(1, Math.floor(positionDollars / price));
+          
+          await alpaca.createOrder({
+            symbol,
+            qty: calculatedQty,
+            side: direction === 'LONG' ? 'buy' : 'sell',
+            type: 'market',
+            time_in_force: 'gtc'
+          });
+        }
         
-        console.log(`Successfully executed ${direction} ${symbol} for user (Key: ${user.alpaca_key.substring(0, 4)}...)`);
+        console.log(`[EXECUTION] Completed ${direction} on ${symbol} for ${user.alpaca_key.slice(0,5)}...`);
       } catch (e) {
         console.error(`Failed to execute for user: ${e.message}`);
       }
