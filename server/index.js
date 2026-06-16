@@ -95,6 +95,53 @@ app.post('/api/auth/login', (req, res) => {
   });
 });
 
+// Auth Middleware
+function authenticateToken(req, res, next) {
+  const authHeader = req.headers['authorization'];
+  const token = authHeader && authHeader.split(' ')[1];
+  if (token == null) return res.sendStatus(401);
+
+  jwt.verify(token, JWT_SECRET, (err, user) => {
+    if (err) return res.sendStatus(403);
+    req.user = user;
+    next();
+  });
+}
+
+// User Endpoints
+app.post('/api/user/keys', authenticateToken, (req, res) => {
+  const { key, secret } = req.body;
+  db.run(`UPDATE users SET alpaca_key = ?, alpaca_secret = ? WHERE id = ?`, [key, secret, req.user.id], function(err) {
+    if (err) return res.status(500).json({ error: 'DB Error' });
+    res.json({ success: true });
+  });
+});
+
+app.get('/api/user/portfolio', authenticateToken, (req, res) => {
+  db.get(`SELECT alpaca_key, alpaca_secret FROM users WHERE id = ?`, [req.user.id], async (err, user) => {
+    if (err) return res.status(500).json({ error: 'DB Error' });
+    if (!user || !user.alpaca_key || !user.alpaca_secret) {
+      return res.json({ equity: 0, buying_power: 0, connected: false });
+    }
+    
+    try {
+      const alpaca = new Alpaca({
+        keyId: user.alpaca_key,
+        secretKey: user.alpaca_secret,
+        paper: true
+      });
+      const account = await alpaca.getAccount();
+      res.json({ 
+        equity: account.equity, 
+        buying_power: account.buying_power, 
+        connected: true 
+      });
+    } catch (e) {
+      res.status(400).json({ error: 'Invalid API Keys' });
+    }
+  });
+});
+
 // Start Server
 const PORT = process.env.PORT || 4000;
 app.listen(PORT, () => {

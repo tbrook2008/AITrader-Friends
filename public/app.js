@@ -102,13 +102,33 @@ document.addEventListener('DOMContentLoaded', () => {
   keysForm.addEventListener('submit', async (e) => {
     e.preventDefault();
     keysMsg.textContent = 'Storing credentials securely...';
-    // MOCK API UPDATE - You would build a POST /api/user/keys endpoint in index.js
-    setTimeout(() => {
+    
+    const token = localStorage.getItem('nexus_token');
+    try {
+      const res = await fetch('/api/user/keys', {
+        method: 'POST',
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          key: alpacaKey.value,
+          secret: alpacaSecret.value
+        })
+      });
+      
+      if (!res.ok) throw new Error('Failed to update keys');
+      
       keysMsg.textContent = 'Credentials successfully vaulted.';
       alpacaKey.value = '';
       alpacaSecret.value = '';
       setTimeout(() => keysMsg.textContent = '', 3000);
-    }, 800);
+      
+      // Refresh portfolio to show new data
+      loadRealData();
+    } catch (err) {
+      keysMsg.textContent = 'Error saving credentials.';
+    }
   });
 
   // --- Helper Functions ---
@@ -130,14 +150,28 @@ document.addEventListener('DOMContentLoaded', () => {
   function showDashboard() {
     authView.classList.remove('active-view');
     dashView.classList.add('active-view');
-    loadMockData(); // In reality, fetch from /api/user/portfolio
+    loadRealData();
   }
 
-  function loadMockData() {
-    // Simulated fetching
-    setTimeout(() => {
-      document.getElementById('val-equity').textContent = '$10,000.00';
-      document.getElementById('val-bp').textContent = '$40,000.00';
-    }, 500);
+  async function loadRealData() {
+    const token = localStorage.getItem('nexus_token');
+    try {
+      const res = await fetch('/api/user/portfolio', {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      const data = await res.json();
+      
+      if (data.connected) {
+        document.getElementById('val-equity').textContent = '$' + parseFloat(data.equity).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
+        document.getElementById('val-bp').textContent = '$' + parseFloat(data.buying_power).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
+      } else {
+        document.getElementById('val-equity').textContent = 'Needs API Keys';
+        document.getElementById('val-bp').textContent = 'Needs API Keys';
+      }
+    } catch (err) {
+      console.error(err);
+      document.getElementById('val-equity').textContent = 'Error';
+      document.getElementById('val-bp').textContent = 'Error';
+    }
   }
 });
