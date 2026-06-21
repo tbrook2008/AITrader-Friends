@@ -39,9 +39,10 @@ app.post('/api/internal/signal', async (req, res) => {
   db.all(`SELECT alpaca_key, alpaca_secret FROM users WHERE is_active = 1`, [], async (err, users) => {
     if (err) return res.status(500).send('DB Error');
     
-    // Execute trades asynchronously for all friends
-    const promises = users.map(async (user) => {
-      if (!user.alpaca_key || !user.alpaca_secret) return;
+    // Execute trades sequentially with a small delay to avoid Alpaca 429 Rate Limits
+    let successCount = 0;
+    for (const user of users) {
+      if (!user.alpaca_key || !user.alpaca_secret) continue;
       
       const alpaca = new Alpaca({
         keyId: user.alpaca_key,
@@ -53,10 +54,8 @@ app.post('/api/internal/signal', async (req, res) => {
         const account = await alpaca.getAccount();
         
         if (direction === 'CLOSE') {
-          // Alpaca closePosition automatically sells all shares/coins
           await alpaca.closePosition(symbol);
         } else {
-          // Dynamic sizing: exact percentage used by the master node, fallback to 5%
           const positionPct = req.body.positionPct || 0.05;
           const positionDollars = parseFloat(account.buying_power) * positionPct;
           const calculatedQty = Math.max(1, Math.floor(positionDollars / price));
@@ -71,13 +70,16 @@ app.post('/api/internal/signal', async (req, res) => {
         }
         
         console.log(`[EXECUTION] Completed ${direction} on ${symbol} for ${user.alpaca_key.slice(0,5)}...`);
+        successCount++;
       } catch (e) {
         console.error(`Failed to execute for user: ${e.message}`);
       }
-    });
+      
+      // 100ms delay between users
+      await new Promise(res => setTimeout(res, 100));
+    }
     
-    await Promise.allSettled(promises);
-    res.json({ status: 'Broadcast complete', usersHit: users.length });
+    res.json({ status: 'Broadcast complete', usersHit: successCount });
   });
 });
 
