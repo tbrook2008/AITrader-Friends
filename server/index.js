@@ -75,8 +75,8 @@ app.post('/api/internal/signal', async (req, res) => {
         console.error(`Failed to execute for user: ${e.message}`);
       }
       
-      // 100ms delay between users
-      await new Promise(res => setTimeout(res, 100));
+      // 650ms delay between users to avoid Alpaca 429 Rate Limits (200 req/min max)
+      await new Promise(res => setTimeout(res, 650));
     }
     
     res.json({ status: 'Broadcast complete', usersHit: successCount });
